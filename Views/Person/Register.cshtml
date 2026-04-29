@@ -1,0 +1,16 @@
+﻿@model ChirpApp.Models.Person
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<h1>Register</h1>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+    <input asp-for="Email" placeholder="E-Mail" />
+    <input asp-for="Name" placeholder="Benutzername" />
+    <input name="passwort" type="password" placeholder="Passwort" />
+    <textarea asp-for="ShortDescription" placeholder="Kurzbeschreibung"></textarea>
+    <button type="submit">Registrieren</button>
+</form>

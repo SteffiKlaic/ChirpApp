@@ -1,0 +1,49 @@
+﻿@model ChirpApp.Models.LoginViewModel
+@* Die View bekommt ein LoginViewModel mit 2 Eigenschaften:
+   - Login (E-Mail oder Benutzername)
+   - Passwort *@
+
+@{
+    // Titel der Seite (z. B. für <title>-Tag im Layout)
+    ViewData["Title"] = "Login";
+}
+
+<h1>Login</h1>
+
+@* Formular, das an PersonController → Login (POST) sendet *@
+<form asp-action="Login" asp-controller="Person" method="post">
+
+    @* CSRF-Schutz: Token wird automatisch validiert (Pflicht bei POST-Formularen) *@
+    @Html.AntiForgeryToken()
+
+    @* --- Meldung bei erfolgreicher Registrierung (kommt über TempData aus Register-Methode) --- *@
+    @if (TempData["RegisterSuccess"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["RegisterSuccess"]
+        </div>
+    }
+
+    @* --- Fehlermeldung, falls Login fehlschlägt (vom Controller via ViewBag gesetzt) --- *@
+    @if (ViewBag.LoginError != null)
+    {
+        <div class="text-danger">@ViewBag.LoginError</div>
+    }
+
+    @* --- Eingabefeld für Login (E-Mail oder Benutzername) --- *@
+    <input asp-for="Login" placeholder="E-Mail oder Benutzername" />
+    @* Anzeige einer Validierungsfehlermeldung, falls Required-Attribut verletzt wird *@
+    <span asp-validation-for="Login"></span>
+
+    @* --- Eingabefeld für Passwort (wird mit ••• maskiert, da DataType.Password) --- *@
+    <input asp-for="Passwort" type="password" placeholder="Passwort" />
+    <span asp-validation-for="Passwort"></span>
+
+    @* --- Absende-Button --- *@
+    <button type="submit">Anmelden</button>
+</form>
+
+@* --- Aktiviert clientseitige Validierung (JavaScript) --- *@
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

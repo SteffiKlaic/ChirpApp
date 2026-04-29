@@ -1,0 +1,38 @@
+﻿@model ProfileVm
+@* Das Modell ist vom Typ ProfileVm (ViewModel mit Person + Statistiken + Chirps) *@
+
+@{
+    // Titel der Seite (z. B. für <title>-Tag im Layout)
+    ViewData["Title"] = "Profile";
+}
+
+@* --- Überschrift: Name der Person --- *@
+<h2>@Model.Person.Name</h2>
+
+@* Kurzbeschreibung (z. B. "Softwareentwickler aus Wien") *@
+<p>@Model.Person.ShortDescription</p>
+
+@* Registrierungsdatum formatiert als Tag.Monat.Jahr *@
+<p>Registriert am: @Model.Person.RegistrationDate.ToString("dd.MM.yyyy")</p>
+
+@* --- Statistiken über den Benutzer --- *@
+<p>
+    <strong>Gepostete Chirps:</strong> @Model.ChirpCount |
+    <strong>Likes vergeben:</strong> @Model.LikesGiven |
+    <strong>Likes erhalten:</strong> @Model.LikesReceived
+</p>
+
+@* --- Auflistung der letzten 5 Chirps dieses Benutzers --- *@
+<h4>Letzte 5 Chirps</h4>
+
+<ul>
+    @* Schleife über die letzten 5 Chirps aus ViewModel.RecentChirps *@
+    @foreach (var c in Model.RecentChirps)
+    {
+        <li>
+            @* Beispielausgabe: "01.10.2025: Hallo Welt (Likes: 3)" *@
+            @c.CreatedOn.ToString("dd.MM.yyyy"): @c.Message
+            (Likes: @(c.Likes?.Count ?? 0))
+        </li>
+    }
+</ul>

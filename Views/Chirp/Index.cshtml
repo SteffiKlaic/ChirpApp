@@ -1,0 +1,138 @@
+﻿@model IEnumerable<ChirpApp.Models.Chirp>
+@using System.Security.Claims
+
+@{
+    // Seitentitel für <title>-Tag
+    ViewData["Title"] = "Index";
+
+    // aktuelle Benutzer-ID (aus Cookie / Claims)
+    var uid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+    // currentUserId = null, falls kein User eingeloggt ist
+    // sonst wird die UID (string) in int umgewandelt
+    int? currentUserId = string.IsNullOrEmpty(uid) ? (int?)null : int.Parse(uid);
+
+    // Top 5 Peeps, die vom Controller über ViewBag übergeben wurden
+    var top = ViewBag.TopPeeps as List<KeyValuePair<string, int>>;
+}
+
+<h1>Chirps</h1>
+
+@* --- Anzeige der Top 5 Peeps (letzte 24 Stunden) --- *@
+@if (top != null && top.Any())
+{
+    <div class="mb-3">
+        <strong>Top Peeps (letzte 24h):</strong>
+
+        @* Jede Peep als Badge mit Name + Anzahl Vorkommen *@
+        @foreach (var kv in top)
+        {
+            <span class="badge bg-secondary text-light me-2 mb-2">
+                &lt;@kv.Key&gt; (@kv.Value)
+                @* Beispiel: <webdev> (3) *@
+            </span>
+        }
+    </div>
+}
+
+@* --- Formular zum Filtern nach einem bestimmten Peep --- *@
+<form asp-action="ByPeep" method="get" class="mb-3" style="max-width:420px;">
+    <div class="input-group">
+        @* Visuelles < Zeichen vor dem Eingabefeld *@
+        <span class="input-group-text">&lt;</span>
+
+        @* Textfeld für Peep-Namen (ohne < eingeben) *@
+        <input name="peep" class="form-control" placeholder="Peep (ohne &lt;), z. B. webdev" />
+
+        @* Filter-Button ruft GET /Chirp/ByPeep?peep=xyz auf *@
+        <button class="btn btn-outline-secondary" type="submit">Filtern</button>
+    </div>
+</form>
+
+@* --- Hinweis bei aktivem Filter --- *@
+@if (ViewBag.FilterPeep != null)
+{
+    <div class="alert alert-info">
+        Gefiltert nach: <strong>&lt;@ViewBag.FilterPeep&gt;</strong>
+        @* Link um Filter zu entfernen *@
+        <a asp-action="Index" class="ms-2">Filter entfernen</a>
+    </div>
+}
+
+@* --- Link zum Erstellen eines neuen Chirps --- *@
+<p><a asp-action="Create">Create New</a></p>
+
+@* --- Tabelle mit allen Chirps --- *@
+<table class="table">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Message</th>
+            <th>Creator</th>
+            <th>Likes</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @* Schleife über alle Chirps aus dem Model (Liste von Chirp-Objekten) *@
+        @foreach (var item in Model)
+        {
+            // Prüfen, ob aktueller User diesen Chirp geliked hat
+            var userLiked = currentUserId != null && item.Likes.Any(x => x.PersonId == currentUserId);
+
+            <tr>
+                @* --- Spalte: Datum des Chirps --- *@
+                <td>@item.CreatedOn.ToString("dd.MM.yyyy")</td>
+
+                @* --- Spalte: Nachricht + Peeps --- *@
+                <td>
+                    @item.Message
+                    <div class="mt-1">
+                        @* Peeps-Liste ist nie null; wenn keine Peeps da sind, rendert foreach nichts *@
+                        @foreach (var name in item.Peeps.Select(p => p.Notion))
+                        {
+                            @* Jeder Peep als Badge (z. B. <webdev>) *@
+                            <span class="badge bg-info text-dark me-1">&lt;@name&gt;</span>
+                        }
+                    </div>
+                </td>
+
+                @* --- Spalte: Ersteller mit Link zum Profil --- *@
+                <td>
+                    <a asp-controller="Person" asp-action="Profile" asp-route-id="@item.PersonId">
+                        @item.Creator?.Name
+                    </a>
+                </td>
+
+                @* --- Spalte: Anzahl Likes --- *@
+                <td>@(item.Likes?.Count ?? 0)</td>
+                @* ?. → sicheres Navigieren (null-check)
+                   ??  → falls null, Standardwert 0 *@
+
+                @* --- Spalte: Like / Unlike Button --- *@
+                <td>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        @* Formular mit Like/Unlike-Button (POST an ToggleLike) *@
+                        <form asp-action="ToggleLike" method="post" style="display:inline">
+                            @Html.AntiForgeryToken() @* Schutz gegen CSRF *@
+
+                            @* verstecktes Feld mit Chirp-Id *@
+                            <input type="hidden" name="chirpId" value="@item.Id" />
+
+                            @* Button-Text + Farbe abhängig davon, ob User schon geliked hat *@
+                            <button type="submit" class="btn btn-sm @(userLiked ? "btn-danger" : "btn-primary")">
+                                @(userLiked ? "Unlike" : "Like")
+                            </button>
+                        </form>
+                    }
+                    else
+                    {
+                        @* Wenn nicht eingeloggt: Hinweis + Login-Link *@
+                        <span><a asp-controller="Person" asp-action="Login">Login</a> to like</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
