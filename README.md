@@ -79,9 +79,9 @@ Die Anwendung wurde mit ASP.NET Core MVC entwickelt und unterstützt Registrieru
 
 ---
 
-## ER-Diagramm, relationales Diagramm, Wireframes und Dokumentation
+## Entwurfskonzepte: ERD, Relationales Schema & Wireframes
 
-![Diagramm](Dokumentation_Diagramme_Wireframes.jpg)
+![Diagramm](diagramm.jpg)
 
 ---
 
