@@ -60,7 +60,7 @@
 }
 
 @* --- Link zum Erstellen eines neuen Chirps --- *@
-<p><a asp-action="Create">Create New</a></p>
+<p><a class="btn btn-primary"  asp-action="Create">Create New</a>
 
 @* --- Tabelle mit allen Chirps --- *@
 <table class="table">
@@ -99,7 +99,7 @@
 
                 @* --- Spalte: Ersteller mit Link zum Profil --- *@
                 <td>
-                    <a asp-controller="Person" asp-action="Profile" asp-route-id="@item.PersonId">
+                        <a asp-controller="Person" asp-action="Profile" asp-route-id="@item.PersonId">
                         @item.Creator?.Name
                     </a>
                 </td>
